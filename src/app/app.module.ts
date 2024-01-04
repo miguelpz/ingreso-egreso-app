@@ -1,10 +1,11 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { provideFirebaseApp, getApp, initializeApp} from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore'; 
 import { getAuth, provideAuth, connectAuthEmulator, Auth } from '@angular/fire/auth';
+
 
 
 import { AppRoutingModule } from './app-routing.module';
@@ -19,6 +20,11 @@ import { FooterComponent } from './shared/footer/footer.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { SidebarComponent } from './shared/sidebar/sidebar.component';
 import { environment } from 'src/environments/environment';
+
+
+import { StoreModule } from '@ngrx/store';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { appReducers } from './app.reducer';
 
 
 @NgModule({
@@ -41,7 +47,12 @@ import { environment } from 'src/environments/environment';
     ReactiveFormsModule,
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(()=>getFirestore()),
-    provideAuth(()=>getAuth())
+    provideAuth(()=>getAuth()),
+    StoreModule.forRoot(appReducers),
+    StoreDevtoolsModule.instrument({
+      maxAge: 25, // Retains last 25 states
+      logOnly: !isDevMode()})  
+  
 
   
   ],
