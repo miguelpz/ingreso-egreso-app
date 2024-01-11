@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, addDoc, collection, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { Firestore, Unsubscribe, addDoc, collection, doc, getDoc, onSnapshot, setDoc } from '@angular/fire/firestore';
 import {createUserWithEmailAndPassword,signInWithEmailAndPassword } from "firebase/auth";
 import Swal from 'sweetalert2'
 import { Usuario } from '../models/usuario.model';
 import { Store } from '@ngrx/store';
 import { AppState } from '../app.reducer';
 import * as authReduc from '../auth/auth.actions';
+import * as ingresoEgresoActions from '../ingreso-egreso/ingreso-egreso.actions';
 
 
 @Injectable({
@@ -14,6 +15,12 @@ import * as authReduc from '../auth/auth.actions';
 })
 export class AuthService {
   public isAuth!:boolean;
+  private _user!: Usuario | null;
+  unsubUsuarioFire! : Unsubscribe;
+
+  get user(){
+    return this._user;
+  }
 
   constructor(private auth:Auth, 
               private firestore:Firestore,
@@ -23,19 +30,19 @@ export class AuthService {
     this.auth.beforeAuthStateChanged(user =>{
       this.isAuth= user!=null ? true:false;
       if (user!=null){
-        this.isAuth = true;   
-        getDoc(doc(this.firestore,user.uid, "usuario")).then ( fireUser =>{
-          const user: Usuario = Usuario.fromFirebase(fireUser.data());
+          this.isAuth = true;   
+          this.unsubUsuarioFire =onSnapshot(doc(this.firestore,user.uid,  "usuario"), (usuario)  => {
+          const user: Usuario = Usuario.fromFirebase(usuario.data());
+          this._user = user;
           this.store.dispatch(authReduc.setUser({user}));
-
-   
-        }).catch(error =>{
-          console.log("error")
-        });
+      });
       }else{
         this.isAuth = false;  
+        this._user = null;
         console.log('No exise el usario. LLamar al unset');
+        this.unsubUsuarioFire();
         this.store.dispatch(authReduc.unSetUser());
+        this.store.dispatch(ingresoEgresoActions.unSetItems());
       }     
     });
    }
@@ -59,12 +66,13 @@ export class AuthService {
       title: 'Espere por favor',     
       willOpen: () => {
         Swal.getConfirmButton()?.setAttribute('hidden','hidden');
-        Swal.showLoading();
+        Swal.showLoading;
       }    
     });
   }
 
   logout(){
+    this.unsubUsuarioFire();
     return this.auth.signOut();
   }
 

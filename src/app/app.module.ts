@@ -6,6 +6,8 @@ import { provideFirebaseApp, getApp, initializeApp} from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore'; 
 import { getAuth, provideAuth, connectAuthEmulator, Auth } from '@angular/fire/auth';
 
+import { NgChartsModule } from 'ng2-charts';
+
 
 
 import { AppRoutingModule } from './app-routing.module';
@@ -25,6 +27,7 @@ import { environment } from 'src/environments/environment';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { appReducers } from './app.reducer';
+import { OrdenIngresoPipe } from './pipes/orden-ingreso.pipe';
 
 
 @NgModule({
@@ -38,13 +41,15 @@ import { appReducers } from './app.reducer';
     DetalleComponent,
     FooterComponent,
     NavbarComponent,
-    SidebarComponent
+    SidebarComponent,
+    OrdenIngresoPipe
     
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    NgChartsModule,
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(()=>getFirestore()),
     provideAuth(()=>getAuth()),
